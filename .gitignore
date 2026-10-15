@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# uv / venv
+.venv/
+
+# pytest / ruff
+.pytest_cache/
+.ruff_cache/
+
+# Nix
+.direnv/
+result
+result-*
+
+# Benchmark artifacts (used locally and in CI, never committed)
+.benchmark-cache/
