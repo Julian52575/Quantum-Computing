@@ -1,25 +1,26 @@
 [project]
 name = "quantum-computing"
 version = "0.1.0"
-description = "Add your description here"
-requires-python = ">=3.12"
+description = "Order selection with QAOA: a Qiskit notebook comparing quantum and classical solvers"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "qiskit>=2.5.2",
+    "qiskit-optimization",
+    "qiskit-aer",
+    "qiskit-ibm-runtime",
+    "networkx",
+    "matplotlib",
+    "pylatexenc",
 ]
-
-[project.scripts]
-quantum-computing = "quantum_computing.main:main"
-quantum-computing-benchmark = "quantum_computing.benchmark:cli"
 
 [dependency-groups]
 dev = [
-    "pytest>=9.1.1",
+    "jupyterlab",
+    "ipykernel",
+    "nbdime",
     "ruff>=0.17.0",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/quantum_computing"]
+[tool.uv]
+# Notebook-only project: nothing to build or install as a package.
+package = false

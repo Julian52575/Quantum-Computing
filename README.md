@@ -1,60 +1,57 @@
 # Quantum-Computing
 
+Order selection with QAOA: [`order_selection_qaoa.ipynb`](order_selection_qaoa.ipynb)
+models an order-selection problem as a QUBO and solves it with Qiskit (QAOA on ideal and
+noisy emulators, optionally IBM hardware), compared against classical solvers.
+
+The notebook **is** the project. Everything in this repo exists to run it and track it in git.
+
 See [CONTRIBUTOR.md](CONTRIBUTOR.md) for the contribution workflow.
+
+## Quick start (Nix)
+
+Install [Nix](https://determinate.systems/install/) with flakes enabled, then:
+
+```bash
+nix develop                                  # first run builds the env (uv sync + venv)
+jupyter lab order_selection_qaoa.ipynb       # open the notebook
+```
+
+Entering the shell:
+
+- provides pinned `python3.12` and `uv` from [nixpkgs 26.05](https://github.com/NixOS/nixpkgs/releases/tag/26.05)
+- installs the locked Python dependencies into `.venv/` (`uv sync --frozen`) and activates it
+- enables [nbdime](https://nbdime.readthedocs.io/) as git's diff/merge tool for notebooks
+
+Editors (VS Code, PyCharm) can point at `.venv/bin/python` as the kernel.
+
+## Without Nix
+
+Requires Python 3.12 and [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv sync
+uv run jupyter lab order_selection_qaoa.ipynb
+```
+
+## Common commands
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace order_selection_qaoa.ipynb  # run all cells headless
+nbdiff-web                                   # visual diff of uncommitted notebook changes
+ruff check order_selection_qaoa.ipynb        # lint the notebook's code cells
+uv add <pkg>                                 # add a dependency (updates uv.lock)
+```
+
+## IBM Quantum hardware (optional)
+
+The hardware section is off by default (`RUN_ON_HARDWARE = False`). To use it, save an
+IBM Quantum account once with `QiskitRuntimeService.save_account(...)`, flip the flag, and
+run the cell. Results are cached to `results/hardware_counts.json`; commit that file so
+others can reproduce the comparison without spending hardware time.
 
 ## Stack
 
-- **Python 3.12**
-- **[uv](https://docs.astral.sh/uv/)** — dependency management, virtual envs, and lockfile
-- **[Qiskit](https://www.ibm.com/quantum/qiskit)** — quantum computing library
-- **[pytest](https://docs.pytest.org/)** — testing
-- **[ruff](https://docs.astral.sh/ruff/)** — linting and formatting
-- **[nix](https://determinate.systems/install/)** - _optional_ - exposes all the previous dependencies into a temporary shell
-
-## Structure
-
-```
-src/quantum_computing/   # package source
-tests/                   # tests
-```
-
-## Usage
-
-```bash
-uv sync                      # install dependencies
-uv run quantum-computing                    # run the main entrypoint
-uv run quantum-computing-benchmark          # run the app N times and report perf metrics
-uv run quantum-computing-benchmark -n 500   # override the iteration count (default: 100)
-uv run pytest                               # run tests
-uv run ruff check .                         # lint
-```
-
-### Benchmark metrics
-
-`uv run quantum-computing-benchmark` runs `main()` repeatedly and reports:
-
-- **Startup time** — time to import `quantum_computing.main` (relevant once Qiskit imports land, since they can be heavy)
-- **Wall-clock time** — total elapsed time across all iterations (`time.perf_counter()`)
-- **CPU time** — user vs. system time (`resource.getrusage`)
-- **Peak memory (RSS)** — maximum resident set size (`ru_maxrss`)
-- **Throughput** — iterations per second
-- **Latency distribution** — mean/median/p95/p99 across iterations, not just a single sample
-
-## Nix dev shell
-
-A `flake.nix` is provided for a reproducible shell that exposes `uv` and `python3.12`
-preinstalled, pinned to [nixpkgs 26.05](https://github.com/NixOS/nixpkgs/releases/tag/26.05):
-
-- `uv` 0.11.16
-- `python3` 3.12.13
-
-```bash
-julian@RulianPC:~/Quantum-Computing$ uv --version    # not on path
-Command 'uv' not found, but can be installed with:
-sudo snap install astral-uv
-julian@RulianPC:~/Quantum-Computing$ nix develop     # drop into the shell
-julian@RulianPC:~/Quantum-Computing$ uv --version    # uv is available under the nix shell
-uv 0.11.16 (x86_64-unknown-linux-gnu)
-julian@RulianPC:~/Quantum-Computing$ which uv
-/nix/store/.../uv-0.11.16/bin/uv
-```
+- **Python 3.12**, **uv** (dependencies + lockfile), **Nix flake** (dev shell)
+- **Qiskit**, **qiskit-optimization**, **qiskit-aer**, **qiskit-ibm-runtime**
+- **JupyterLab**, **nbdime**, **ruff**

@@ -17,5 +17,8 @@ dist/
 result
 result-*
 
-# Benchmark artifacts (used locally and in CI, never committed)
-.benchmark-cache/
+# Jupyter
+.ipynb_checkpoints/
+
+# Local course material, never pushed
+no_push/
