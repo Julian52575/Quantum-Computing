@@ -150,12 +150,14 @@ const chartBase = () => ({
 
 async function main() {
   const icons = {
-    machine: await icon(fa.FaCogs, HEX.lt1), worker: await icon(fa.FaUserCog, HEX.lt1), clock: await icon(fa.FaClock, HEX.lt1),
     tower: await icon(fa.FaBroadcastTower, HEX.accent1), ad: await icon(fa.FaBullhorn, HEX.accent1),
     truck: await icon(fa.FaTruck, HEX.accent1), chart: await icon(fa.FaChartLine, HEX.accent1),
     check: await icon(fa.FaCheck, HEX.lt1), cross: await icon(fa.FaTimes, HEX.lt1), arrow: await icon(fa.FaArrowRight, HEX.accent5),
     redo: await icon(fa.FaRedo, HEX.accent2),
   };
+
+  const th = (t, o = {}) => ({ text: t, options: { bold: true, color: C.background1, fill: { color: C.text2 }, ...o } });
+  const td = (t, o = {}) => ({ text: t, options: { color: "1B2A33", ...o } });
 
   // ---------------------------------------------------- 1. title
   pres.addSection({ title: "Introduction" });
@@ -206,30 +208,30 @@ async function main() {
   // ---------------------------------------------------- 3. industry problem
   pres.addSection({ title: "Problem & model" });
   s = contentSlide(0, "A workshop gets more orders than it can process", "Problem & model");
-  s.addText("Each order brings a profit. Some orders conflict because they need the same scarce resource.",
+  s.addText("Each order brings a profit and needs scarce resources. A resource serves one order per week.",
     { x: MX, y: 1.95, w: 6.0, h: 0.85, fontSize: 18, color: "1B2A33", valign: "top", margin: 0, isTextBox: true, objectName: "industry-context" });
-  [["Decision", "which orders to accept"], ["Goal", "maximize the total profit"], ["Rule", "never accept two conflicting orders"]].forEach(([k, v], i) => {
+  [["Decision", "which orders to accept"], ["Goal", "maximize the total profit"], ["Rule", "never accept two orders that share a resource"]].forEach(([k, v], i) => {
     const y = 3.0 + i * 0.75;
     s.addText(k, { shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.1, x: MX, y, w: 1.4, h: 0.5, fill: { color: C.accent1 },
       color: C.background1, fontSize: 15, bold: true, align: "center", valign: "middle", margin: 0, objectName: `industry-key-${i + 1}` });
-    s.addText(v, { x: MX + 1.6, y, w: 4.4, h: 0.5, fontSize: 18, color: "1B2A33", valign: "middle", margin: 0, isTextBox: true, objectName: `industry-val-${i + 1}` });
+    s.addText(v, { x: MX + 1.6, y, w: 4.6, h: 0.5, fontSize: 18, color: "1B2A33", valign: "middle", margin: 0, isTextBox: true, objectName: `industry-val-${i + 1}` });
   });
-  const conflictsKinds = [["machine", "Same machine", "Two jobs need the only CNC mill"], ["worker", "Same worker", "Only one welder is certified"],
-    ["clock", "Same time slot", "Both deliveries need the Monday dock"]];
-  conflictsKinds.forEach(([ic, t, d], i) => {
-    const y = 1.95 + i * 1.15;
-    card(s, 7.1, y, 5.63, 0.95, `conflict-card-${i + 1}`);
-    s.addShape(pres.shapes.OVAL, { x: 7.3, y: y + 0.17, w: 0.6, h: 0.6, fill: { color: C.accent2 }, line: { type: "none" }, objectName: `conflict-icon-bg-${i + 1}` });
-    s.addImage({ data: icons[ic], x: 7.44, y: y + 0.31, w: 0.32, h: 0.32, altText: t });
-    s.addText([{ text: t, options: { bold: true, fontSize: 16, color: C.text2, breakLine: true } }, { text: d, options: { fontSize: 13, color: MUTED } }],
-      { x: 8.1, y: y + 0.08, w: 4.5, h: 0.8, margin: 0, valign: "middle", isTextBox: true, objectName: `conflict-text-${i + 1}` });
-  });
+  // Mirrors RESOURCES in the notebook: each resource shared by two orders is one conflict edge.
+  const resources = [["Machine", [["CNC mill", "1, 2"], ["Laser cutter", "3, 4"], ["Paint booth", "5, 6"], ["Lathe", "7, 8"]]],
+    ["Worker", [["Certified welder", "1, 3"], ["Quality inspector", "4, 6"], ["Electrician", "5, 7"]]],
+    ["Time slot", [["Monday dock slot", "2, 4"], ["Wednesday dock slot", "3, 5"], ["Friday dock slot", "6, 8"]]]];
+  const resRows = [[th("Type"), th("Resource (capacity 1)"), th("Orders", { align: "center" })]];
+  resources.forEach(([type, items], gi) => items.forEach(([name, orders], k) => resRows.push([
+    ...(k === 0 ? [td(type, { rowspan: items.length, bold: true, color: C.text2, fill: { color: gi % 2 ? "FFFFFF" : HEX.lt2 } })] : []),
+    td(name), td(orders, { align: "center", bold: true, color: C.accent2 })])));
+  s.addTable(resRows, { x: 7.1, y: 1.95, w: 5.63, colW: [1.4, 2.73, 1.5], fontSize: 13, rowH: 0.3, valign: "middle",
+    border: { type: "solid", pt: 0.75, color: "DDE3E6" }, margin: [0.02, 0.1, 0.02, 0.1], objectName: "resource-table" });
   card(s, MX, 5.55, CW, 1.15, "combinatorics-card", C.text2);
   s.addText([{ text: "2", options: { fontSize: 36, bold: true, color: C.accent3 } }, { text: "n", options: { fontSize: 36, bold: true, color: C.accent3, superscript: true } }],
     { x: MX + 0.3, y: 5.6, w: 0.9, h: 1.05, margin: 0, valign: "middle", fontFace: THEME.headFontFace, isTextBox: true, objectName: "combinatorics-value" });
   s.addText("possible selections: 256 for our 8 orders, about 10¹⁵ for 50 orders. Checking them all does not scale.",
     { x: MX + 1.25, y: 5.6, w: CW - 1.55, h: 1.05, fontSize: 17, color: C.background1, margin: 0, valign: "middle", isTextBox: true, objectName: "combinatorics-text" });
-  s.addNotes("The business story. Conflicts come from different resources: machines, certified workers, time slots. That mix matters, as we will see on the next slide. The number of possible selections doubles with every order: 256 for our instance, but around 10^15 for 50 orders.");
+  s.addNotes("The business story. Each order needs some resources, and each resource can serve only one order in the planning week. Two orders that share a resource conflict: the table gives the ten resources behind our ten conflicts, a mix of machines, certified workers and dock slots. That mix matters, as we will see on the next slide. If asked about real capacities such as machine-hours: those need knapsack-type constraints with slack qubits, which is a different problem. The number of possible selections doubles with every order: 256 for our instance, but around 10^15 for 50 orders.");
 
   // ---------------------------------------------------- 4. MWIS
   s = contentSlide(0, "Accepting orders = picking an independent set", "Problem & model");
@@ -305,8 +307,6 @@ async function main() {
 
   // ---------------------------------------------------- 7. converters
   s = contentSlide(0, "How the QUBO is built changes qubits and penalty", "Problem & model");
-  const th = (t) => ({ text: t, options: { bold: true, color: C.background1, fill: { color: C.text2 } } });
-  const td = (t, o = {}) => ({ text: t, options: { color: "1B2A33", ...o } });
   s.addTable([
     [th("Construction"), th("Qubits"), th("Penalty"), th("Optimum"), th("Comment")],
     [td("Step-by-step converters (slack variables, notebook 2)"), td("18", { bold: true, color: C.accent2 }), td("33"), td("{1, 4, 5, 8}"), td("One slack bit per conflict: more than twice the qubits")],
