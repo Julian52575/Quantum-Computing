@@ -37,6 +37,5 @@ feat(benchmark): add latency percentiles to json output
 
 ## Branches and PRs
 
-- Never commit directly to `main`.
-- All work happens on a branch, merged into `main` through a pull request.
+- Commits may go directly to `main`, or through a branch and a pull request.
 - Keep branches focused on a single change; prefer a small PR over a large one.
